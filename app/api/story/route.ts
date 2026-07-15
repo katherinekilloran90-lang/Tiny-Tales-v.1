@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { openai, TEXT_MODEL } from "@/lib/openai";
 import { isRequestSafe } from "@/lib/moderation";
 import { checkRateLimit, getClientIp } from "@/lib/rateLimit";
-import { saveStory } from "@/lib/storyStore";
+import { StoryStorageError, saveStory } from "@/lib/storyStore";
 import { buildStoryPrompt, storyJsonSchema } from "@/lib/prompts";
 import { generatedStorySchema, storyFormSchema } from "@/lib/validation";
 import type { ApiErrorResponse, StoryRecord, StoryResponse } from "@/lib/types";
@@ -123,7 +123,17 @@ export async function POST(req: NextRequest) {
     illustrationStyle: input.illustrationStyle,
     ...story,
   };
-  saveStory(record);
+
+  try {
+    await saveStory(record);
+  } catch (err) {
+    console.error("[story-spark] could not persist generated story", err);
+    const message =
+      err instanceof StoryStorageError
+        ? "Your story was written, but we couldn't save it for illustration. Please try again in a moment."
+        : "We had trouble saving that story. Please try again.";
+    return errorResponse(message, 503);
+  }
 
   const clientResponse: StoryResponse = {
     storyId: record.id,

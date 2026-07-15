@@ -52,7 +52,19 @@ export async function POST(req: NextRequest) {
   }
   const { storyId, target } = parsed.data;
 
-  const story = getStory(storyId);
+  let story;
+  try {
+    story = await getStory(storyId);
+  } catch (err) {
+    // Log the specific reason (e.g. missing env vars) for the developer,
+    // but never forward internals to the client — see StoryStorageError.
+    console.error("[story-spark] could not reach story storage", err);
+    return errorResponse(
+      "Story storage is temporarily unavailable. Please try again in a moment.",
+      503
+    );
+  }
+
   if (!story) {
     return errorResponse(
       "We couldn't find that story anymore. It may have expired — please create a new one.",
@@ -98,8 +110,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Only count successful generations against the per-story cap, so a
-    // failed attempt doesn't burn part of the retry budget.
-    incrementImageCount(storyId);
+    // failed attempt doesn't burn part of the retry budget. This is a
+    // soft-fail: the image was already generated successfully, so a hiccup
+    // updating the counter shouldn't turn a success into an error for the
+    // user — it's just logged for visibility.
+    try {
+      await incrementImageCount(storyId);
+    } catch (err) {
+      console.error("[story-spark] could not update image count", err);
+    }
 
     const responseBody: ImageResponseBody = {
       target,
