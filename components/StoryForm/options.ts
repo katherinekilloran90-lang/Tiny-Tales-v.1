@@ -43,3 +43,24 @@ export const storyLengthOptions: { value: StoryLength; label: string; hint: stri
 export const DEFAULT_STORY_STYLE: StoryStyle = "magical";
 export const DEFAULT_ILLUSTRATION_STYLE: IllustrationStyle = "colorful-picture-book";
 export const DEFAULT_STORY_LENGTH: StoryLength = "standard";
+
+/**
+ * Playful starter prompts shown as tappable chips under the idea field, for
+ * parents/kids who aren't sure what to type. Selecting one fills the idea
+ * field with the prompt text — the field stays fully editable afterwards,
+ * nothing is locked in.
+ */
+export interface IdeaSuggestion {
+  emoji: string;
+  label: string;
+  prompt: string;
+}
+
+export const ideaSuggestions: IdeaSuggestion[] = [
+  { emoji: "🦖", label: "Dinosaurs", prompt: "A friendly dinosaur who is nervous about starting school" },
+  { emoji: "🦄", label: "Unicorns", prompt: "A unicorn who has lost her rainbow" },
+  { emoji: "🐉", label: "Dragons", prompt: "A tiny dragon who cannot breathe fire yet" },
+  { emoji: "🚀", label: "Space", prompt: "A child who discovers a secret rocket in the garden" },
+  { emoji: "🧚", label: "Fairies", prompt: "A fairy who accidentally makes everything enormous" },
+  { emoji: "🐾", label: "Animals", prompt: "A shy woodland animal who wants to join the festival" },
+];

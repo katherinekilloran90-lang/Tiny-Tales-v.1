@@ -7,10 +7,12 @@ import {
   DEFAULT_STORY_LENGTH,
   DEFAULT_STORY_STYLE,
   ageRangeOptions,
+  ideaSuggestions,
   illustrationStyleOptions,
   storyLengthOptions,
   storyStyleOptions,
 } from "./options";
+import { IdeaSuggestions } from "./IdeaSuggestions";
 import type { StoryFormInput } from "@/lib/types";
 import styles from "./StoryForm.module.css";
 
@@ -21,34 +23,53 @@ interface StoryFormProps {
   onSubmit: (input: StoryFormInput) => void;
   disabled?: boolean;
   initialError?: string | null;
+  /** Repopulates the form — used when returning from an error via "Change my
+   *  idea", so the parent/child don't have to retype everything. */
+  initialValues?: Partial<StoryFormInput>;
 }
 
-export function StoryForm({ onSubmit, disabled, initialError }: StoryFormProps) {
-  const [idea, setIdea] = useState("");
-  const [childName, setChildName] = useState("");
-  const [ageRange, setAgeRange] = useState<StoryFormInput["ageRange"]>("6-8");
+export function StoryForm({ onSubmit, disabled, initialError, initialValues }: StoryFormProps) {
+  const [idea, setIdea] = useState(initialValues?.idea ?? "");
+  const [childName, setChildName] = useState(initialValues?.childName ?? "");
+  const [ageRange, setAgeRange] = useState<StoryFormInput["ageRange"]>(
+    initialValues?.ageRange ?? "6-8"
+  );
 
   // These three still power the story pipeline exactly as before, but they're
   // no longer part of the primary 3-question flow. They default to values
   // that suit a bright, modern storybook, and can be tweaked in "Customize
   // the magic" below without touching the API or prompt logic.
-  const [storyStyle, setStoryStyle] = useState<StoryFormInput["storyStyle"]>(DEFAULT_STORY_STYLE);
-  const [illustrationStyle, setIllustrationStyle] =
-    useState<StoryFormInput["illustrationStyle"]>(DEFAULT_ILLUSTRATION_STYLE);
-  const [storyLength, setStoryLength] =
-    useState<StoryFormInput["storyLength"]>(DEFAULT_STORY_LENGTH);
+  const [storyStyle, setStoryStyle] = useState<StoryFormInput["storyStyle"]>(
+    initialValues?.storyStyle ?? DEFAULT_STORY_STYLE
+  );
+  const [illustrationStyle, setIllustrationStyle] = useState<StoryFormInput["illustrationStyle"]>(
+    initialValues?.illustrationStyle ?? DEFAULT_ILLUSTRATION_STYLE
+  );
+  const [storyLength, setStoryLength] = useState<StoryFormInput["storyLength"]>(
+    initialValues?.storyLength ?? DEFAULT_STORY_LENGTH
+  );
 
   const [showCustomize, setShowCustomize] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  // A local, instant guard against double-taps: the parent also unmounts
+  // this form while generating, but that transition depends on state
+  // propagating back up, so this flips the button off on the very first
+  // click with no delay.
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isDisabled = disabled || isSubmitting;
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (isDisabled) return;
+
     const trimmedIdea = idea.trim();
     if (trimmedIdea.length < 3) {
       setFormError("Tell us a little more about your story idea.");
       return;
     }
     setFormError(null);
+    setIsSubmitting(true);
     onSubmit({
       idea: trimmedIdea,
       childName: childName.trim() || undefined,
@@ -79,7 +100,7 @@ export function StoryForm({ onSubmit, disabled, initialError }: StoryFormProps) 
           onChange={(e) => setChildName(e.target.value.slice(0, NAME_MAX_LENGTH))}
           maxLength={NAME_MAX_LENGTH}
           placeholder="e.g. Amara"
-          disabled={disabled}
+          disabled={isDisabled}
         />
       </div>
 
@@ -106,7 +127,7 @@ export function StoryForm({ onSubmit, disabled, initialError }: StoryFormProps) 
           <span className={styles.labelIcon} aria-hidden="true">
             🪄
           </span>
-          What adventure would you like today?
+          What adventure should we create?
         </label>
         <textarea
           id="idea"
@@ -115,14 +136,21 @@ export function StoryForm({ onSubmit, disabled, initialError }: StoryFormProps) 
           onChange={(e) => setIdea(e.target.value.slice(0, IDEA_MAX_LENGTH))}
           maxLength={IDEA_MAX_LENGTH}
           rows={3}
-          placeholder="A shy little dragon who's scared of flying, but discovers she's braver than she thinks…"
+          placeholder="A little dragon who is afraid of the dark…"
           required
           aria-describedby="idea-count"
-          disabled={disabled}
+          disabled={isDisabled}
         />
         <span id="idea-count" className={styles.charCount}>
           {idea.length}/{IDEA_MAX_LENGTH}
         </span>
+
+        <IdeaSuggestions
+          suggestions={ideaSuggestions}
+          currentIdea={idea}
+          onSelect={(prompt) => setIdea(prompt)}
+          disabled={isDisabled}
+        />
       </div>
 
       {activeError && (
@@ -131,9 +159,14 @@ export function StoryForm({ onSubmit, disabled, initialError }: StoryFormProps) 
         </p>
       )}
 
-      <button type="submit" className={styles.submit} disabled={disabled}>
-        Create my story ✨
-      </button>
+      <div className={styles.ctaGroup}>
+        <button type="submit" className={styles.submit} disabled={isDisabled}>
+          {isSubmitting ? "Creating your story…" : "Create my story ✨"}
+        </button>
+        <p className={styles.reassurance}>
+          Your story and illustrations are created especially for you.
+        </p>
+      </div>
 
       <button
         type="button"

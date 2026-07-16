@@ -1,0 +1,101 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: var(--color-card);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-soft);
+  padding: 2.75rem 2rem;
+  max-width: 440px;
+  width: 100%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.iconStage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-lavender-soft), var(--color-pink-soft));
+}
+
+.icon {
+  font-size: 2.4rem;
+}
+
+.title {
+  font-size: clamp(1.4rem, 4vw, 1.7rem);
+  color: var(--color-ink);
+}
+
+.subtitle {
+  color: var(--color-ink-light);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  max-width: 32ch;
+}
+
+.detail {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-pink-dark);
+  background: var(--color-pink-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.85rem;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.retryButton {
+  width: 100%;
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--gradient-pink);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 0.95rem 1.4rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-pink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.retryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(255, 79, 163, 0.45);
+}
+
+.retryButton:active {
+  transform: translateY(0);
+}
+
+.secondaryButton {
+  width: 100%;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-ink);
+  background: #fff;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 0.8rem 1.4rem;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.secondaryButton:hover {
+  border-color: var(--color-pink);
+  transform: translateY(-1px);
+}
